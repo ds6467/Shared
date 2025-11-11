@@ -51,7 +51,6 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
     super.dispose();
   }
 
-  /// ✅ FIXED: Get tab body - only 4 tabs now
   Widget getTabBody() {
     switch (currentIndex) {
       case TabData.TAB_INDEX_EMAIL_SECURITY:
@@ -71,7 +70,6 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
     }
   }
 
-  /// Email Security View - Choose Gmail or Outlook
   Widget _buildEmailSecurityView() {
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -237,9 +235,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
         const Expanded(child: SizedBox()),
         BottomBarView(
           tabIconsList: tabIconsList,
-          addClick: () {
-            // TODO: Add quick action here
-          },
+          addClick: () {},
           changeIndex: (int index) {
             animationController?.reverse().then<dynamic>((data) {
               if (!mounted) return;
