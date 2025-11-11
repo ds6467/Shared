@@ -196,6 +196,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
               title: const Text('Settings'),
               onTap: () {
                 Navigator.pop(context);
+                // TODO: Navigate to settings screen
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('About'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Show about dialog
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: const Text('Help'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Navigate to help screen
               },
             ),
           ],
@@ -274,7 +291,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => NavigationHomeScreen(),
+                                    builder: (context) => const NavigationHomeScreen(),
                                   ),
                                 );
                               },
