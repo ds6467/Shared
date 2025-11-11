@@ -51,7 +51,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
     super.dispose();
   }
 
-  /// ✅ FIXED: Get tab body - removed old tab references
+  /// ✅ FIXED: Get tab body - only 4 tabs now
   Widget getTabBody() {
     switch (currentIndex) {
       case TabData.TAB_INDEX_EMAIL_SECURITY:
@@ -106,7 +106,6 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
               ),
               const SizedBox(height: 48),
               
-              // Gmail Button
               _buildProviderCard(
                 title: 'Gmail',
                 subtitle: 'Scan your Gmail inbox for threats',
@@ -124,7 +123,6 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
               
               const SizedBox(height: 16),
               
-              // Outlook Button
               _buildProviderCard(
                 title: 'Outlook',
                 subtitle: 'Scan your Outlook/Office 365 inbox',
@@ -239,7 +237,9 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
         const Expanded(child: SizedBox()),
         BottomBarView(
           tabIconsList: tabIconsList,
-          addClick: () {},
+          addClick: () {
+            // TODO: Add quick action here
+          },
           changeIndex: (int index) {
             animationController?.reverse().then<dynamic>((data) {
               if (!mounted) return;
