@@ -1,0 +1,465 @@
+import 'package:flutter/material.dart';
+import 'package:email_securax/models/email_model.dart';
+import 'package:email_securax/models/scan_result_model.dart';
+import 'package:email_securax/services/enhanced_multi_service_email_scanner.dart';
+import 'package:email_securax/screens/hibp/hibp_screen.dart';
+import 'package:email_securax/screens/training/security_training_screen.dart';
+import '../AppTheme.dart';
+import '../models/TabData.dart';
+import 'BottomBarView.dart';
+import 'MainScreen.dart';
+
+class AppHomeScreen extends StatefulWidget {
+  final int initialIndex;
+  final EnhancedMultiServiceEmailScanner? scanner;
+  final List<EmailModel>? emails;
+
+  const AppHomeScreen({
+    Key? key,
+    this.initialIndex = -1,
+    this.scanner,
+    this.emails,
+  }) : super(key: key);
+
+  @override
+  _AppHomeScreenState createState() => _AppHomeScreenState();
+}
+
+class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateMixin {
+  AnimationController? animationController;
+  List<TabData> tabIconsList = TabData.tabIconsList;
+  int currentIndex = TabData.TAB_INDEX_MAIN;
+  EmailModel? _selectedEmail;
+  EmailScanResult? _currentScanResult;
+  bool _isScanning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Reset all tabs
+    for (var tab in tabIconsList) {
+      tab.isSelected = false;
+    }
+
+    // Set initial index
+    currentIndex = widget.initialIndex;
+    if (currentIndex >= TabData.TAB_INDEX_EMAIL_SECURITY) {
+      tabIconsList[currentIndex].isSelected = true;
+    }
+
+    // Select first email by default
+    if (widget.emails != null && widget.emails!.isNotEmpty) {
+      _selectedEmail = widget.emails!.first;
+      _scanSelectedEmail();
+    }
+
+    animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    animationController?.dispose();
+    super.dispose();
+  }
+
+  /// Scan the currently selected email
+  Future<void> _scanSelectedEmail() async {
+    if (_selectedEmail == null || widget.scanner == null) return;
+
+    setState(() {
+      _isScanning = true;
+      _currentScanResult = null;
+    });
+
+    try {
+      print('🔍 Scanning email: ${_selectedEmail!.subject}');
+      final result = await widget.scanner!.scanSingleEmailWithAllServices(_selectedEmail!);
+      
+      if (mounted) {
+        setState(() {
+          _currentScanResult = result;
+          _isScanning = false;
+        });
+        print('✅ Scan complete for: ${_selectedEmail!.subject}');
+      }
+    } catch (e, stackTrace) {
+      print('❌ Scan failed: $e\n$stackTrace');
+      if (mounted) {
+        setState(() {
+          _isScanning = false;
+        });
+      }
+    }
+  }
+
+  /// Get tab body based on current index
+  Widget getTabBody() {
+    switch (currentIndex) {
+      case TabData.TAB_INDEX_EMAIL_SECURITY:
+        return _buildEmailSecurityView();
+        
+      case TabData.TAB_INDEX_IDENTITY_MONITORING:
+        return const HibpScreen();
+        
+      case TabData.TAB_INDEX_SECURITY_TRAINING:
+        return const SecurityTrainingScreen();
+        
+      default:
+        return MainScreen(animationController: animationController);
+    }
+  }
+
+  /// Email Security View with email list + scan results
+  Widget _buildEmailSecurityView() {
+    return Row(
+      children: [
+        // Left panel - Email list
+        _buildEmailListPanel(),
+        
+        // Right panel - Scan results
+        Expanded(
+          child: _buildScanResultsPanel(),
+        ),
+      ],
+    );
+  }
+
+  /// Left panel - Email list
+  Widget _buildEmailListPanel() {
+    if (widget.emails == null || widget.emails!.isEmpty) {
+      return Container(
+        width: 320,
+        color: AppTheme.background,
+        child: const Center(
+          child: Text(
+            'No emails to display',
+            style: TextStyle(color: AppTheme.grey),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 320,
+      decoration: BoxDecoration(
+        color: AppTheme.background,
+        border: Border(
+          right: BorderSide(color: AppTheme.grey.withOpacity(0.2)),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: AppTheme.grey.withOpacity(0.2)),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.email, color: AppTheme.nearlyDarkBlue),
+                const SizedBox(width: 12),
+                Text(
+                  'Inbox (${widget.emails!.length})',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.darkText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Email list
+          Expanded(
+            child: ListView.builder(
+              itemCount: widget.emails!.length,
+              itemBuilder: (context, index) {
+                final email = widget.emails![index];
+                final isSelected = _selectedEmail?.id == email.id;
+                
+                return _buildEmailListItem(email, isSelected);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Individual email list item
+  Widget _buildEmailListItem(EmailModel email, bool isSelected) {
+    // Determine threat level
+    Color threatColor = AppTheme.nearlyGreen;
+    String threatLabel = 'Safe';
+    
+    // Simple heuristic (you can enhance this based on scan results)
+    if (email.hasAttachment && email.links.length > 5) {
+      threatColor = Colors.orange;
+      threatLabel = 'Medium';
+    } else if (email.links.length > 10) {
+      threatColor = AppTheme.nearlyRed;
+      threatLabel = 'High';
+    }
+
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedEmail = email;
+        });
+        _scanSelectedEmail();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? AppTheme.nearlyDarkBlue.withOpacity(0.1) 
+              : Colors.white,
+          border: Border(
+            bottom: BorderSide(color: AppTheme.grey.withOpacity(0.2)),
+            left: BorderSide(
+              color: isSelected ? AppTheme.nearlyDarkBlue : Colors.transparent,
+              width: 4,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Sender + Threat badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    _extractSenderName(email.fromAddress),
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 14,
+                      color: AppTheme.darkText,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: threatColor.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    threatLabel,
+                    style: TextStyle(
+                      color: threatColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            
+            // Subject
+            Text(
+              email.subject,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppTheme.grey,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            
+            // Preview
+            Text(
+              _getEmailPreview(email),
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.grey.withOpacity(0.7),
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Right panel - Scan results
+  Widget _buildScanResultsPanel() {
+    if (_selectedEmail == null) {
+      return _buildEmptyState('Select an email to view security analysis');
+    }
+
+    if (_isScanning) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.nearlyDarkBlue),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Scanning ${_selectedEmail!.subject}...',
+              style: const TextStyle(
+                color: AppTheme.grey,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_currentScanResult == null) {
+      return _buildEmptyState('Scan results unavailable');
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildEmailHeader(),
+          const SizedBox(height: 24),
+          _buildThreatSummaryCard(),
+          const SizedBox(height: 24),
+          _buildDetailedResultsCard(),
+        ],
+      ),
+    );
+  }
+
+  /// Email header card
+  Widget _buildEmailHeader() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.email, color: AppTheme.nearlyDarkBlue, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _selectedEmail!.subject,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.darkText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const Divider(),
+            const SizedBox(height: 12),
+            _buildInfoRow('From', _selectedEmail!.fromAddress),
+            const SizedBox(height: 8),
+            _buildInfoRow('IP', _selectedEmail!.senderIp ?? 'N/A'),
+            const SizedBox(height: 8),
+            _buildInfoRow('Attachments', _selectedEmail!.hasAttachment ? 'Yes' : 'No'),
+            const SizedBox(height: 8),
+            _buildInfoRow('Links', '${_selectedEmail!.links.length}'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 120,
+          child: Text(
+            '$label:',
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.grey,
+              fontSize: 14,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: AppTheme.darkText,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Threat summary card
+  Widget _buildThreatSummaryCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.security, color: AppTheme.nearlyDarkBlue, size: 24),
+                SizedBox(width: 12),
+                Text(
+                  'Threat Analysis',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.darkText,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
+            _buildThreatIndicator('Domain', _currentScanResult!.domainSummary),
+            const SizedBox(height: 12),
+            _buildThreatIndicator('IP Address', _currentScanResult!.ipSummary),
+            const SizedBox(height: 12),
+            _buildThreatIndicator('Links', _currentScanResult!.linkSummary),
+            const SizedBox(height: 12),
+            _buildThreatIndicator('Attachments', _currentScanResult!.attachmentSummary),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThreatIndicator(String label, String summary) {
+    // Determine threat level from summary
+    Color indicatorColor = AppTheme.nearlyGreen;
+    IconData indicatorIcon = Icons.check_circle;
+    
+    if (summary.toUpperCase().contains('MALICIOUS') || 
+        summary.toUpperCase().contains('DANGEROUS') ||
+        summary.toUpperCase().contains('BLOCKED')) {
+      indicatorColor = AppTheme.nearlyRed;
+      indicatorIcon = Icons.error
