@@ -1,0 +1,353 @@
+import 'package:flutter/material.dart';
+import 'package:email_securax/services/enhanced_multi_service_email_scanner.dart';
+import 'package:email_securax/models/email_model.dart';
+import '../AppTheme.dart';
+import '../models/TabData.dart';
+import '../widgets/GradientImageButton.dart';
+import '../widgets/utils.dart';
+import 'AppHomeScreen.dart';
+import 'NavigationHomeScreen.dart';
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({
+    Key? key, 
+    this.animationController,
+    this.scanner,
+    this.emails,
+  }) : super(key: key);
+
+  final AnimationController? animationController;
+  final EnhancedMultiServiceEmailScanner? scanner;  // ✅ Accept scanner
+  final List<EmailModel>? emails;                   // ✅ Accept email list
+
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
+  Animation<double>? topBarAnimation;
+
+  List<Widget> listViews = <Widget>[];
+  final ScrollController scrollController = ScrollController();
+  double topBarOpacity = 0.0;
+
+  @override
+  void initState() {
+    topBarAnimation = Utils.buildAnimation(
+      controller: widget.animationController!, 
+      intervalBegin: 0, 
+      intervalEnd: 0.5,
+    );
+    addAllListData();
+
+    scrollController.addListener(() {
+      if (scrollController.offset >= 24) {
+        if (topBarOpacity != 1.0) {
+          setState(() {
+            topBarOpacity = 1.0;
+          });
+        }
+      } else if (scrollController.offset <= 24 && scrollController.offset >= 0) {
+        if (topBarOpacity != scrollController.offset / 24) {
+          setState(() {
+            topBarOpacity = scrollController.offset / 24;
+          });
+        }
+      } else if (scrollController.offset <= 0) {
+        if (topBarOpacity != 0.0) {
+          setState(() {
+            topBarOpacity = 0.0;
+          });
+        }
+      }
+    });
+    super.initState();
+  }
+
+  void addAllListData() {
+    const int count = 10;
+
+    // ✅ Button 1: Email Security
+    listViews.add(
+      GradientImageButton(
+        animation: Utils.buildAnimation(
+          controller: widget.animationController!, 
+          intervalBegin: (1 / count) * 2, 
+          intervalEnd: 1.0,
+        ),
+        animationController: widget.animationController!,
+        title: "Email Security",
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppHomeScreen(
+                initialIndex: TabData.TAB_INDEX_EMAIL_SECURITY,
+                scanner: widget.scanner,  // ✅ Pass scanner
+                emails: widget.emails,    // ✅ Pass emails
+              ),
+            ),
+          );
+        },
+        startColor: const Color(0xFFFA7D82),
+        endColor: const Color(0xFFFFB295),
+      ),
+    );
+
+    // ✅ Button 2: File & URL Scan (NEW)
+    listViews.add(
+      GradientImageButton(
+        animation: Utils.buildAnimation(
+          controller: widget.animationController!, 
+          intervalBegin: (1 / count) * 3, 
+          intervalEnd: 1.0,
+        ),
+        animationController: widget.animationController!,
+        title: "File & URL Scan",
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppHomeScreen(
+                initialIndex: TabData.TAB_INDEX_FILE_URL_SCAN,
+                scanner: widget.scanner,  // ✅ Pass scanner
+                emails: widget.emails,
+              ),
+            ),
+          );
+        },
+        startColor: const Color(0xFF738AE6),
+        endColor: const Color(0xFF5C5EDD),
+      ),
+    );
+
+    // ✅ Button 3: Identity Monitoring (renamed from Vendor Onboarding)
+    listViews.add(
+      GradientImageButton(
+        animation: Utils.buildAnimation(
+          controller: widget.animationController!, 
+          intervalBegin: (1 / count) * 4, 
+          intervalEnd: 1.0,
+        ),
+        animationController: widget.animationController!,
+        title: "Identity Monitoring",  // ✅ Updated title
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppHomeScreen(
+                initialIndex: TabData.TAB_INDEX_IDENTITY_MONITORING,
+                scanner: widget.scanner,
+                emails: widget.emails,
+              ),
+            ),
+          );
+        },
+        startColor: const Color(0xFFFE95B6),
+        endColor: const Color(0xFFFF5287),
+      ),
+    );
+
+    // ✅ Button 4: Security Training (renamed from Incident Response)
+    listViews.add(
+      GradientImageButton(
+        animation: Utils.buildAnimation(
+          controller: widget.animationController!, 
+          intervalBegin: (1 / count) * 5, 
+          intervalEnd: 1.0,
+        ),
+        animationController: widget.animationController!,
+        title: "Security Training",  // ✅ Updated title
+        onTap: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AppHomeScreen(
+                initialIndex: TabData.TAB_INDEX_SECURITY_TRAINING,
+                scanner: widget.scanner,
+                emails: widget.emails,
+              ),
+            ),
+          );
+        },
+        startColor: const Color(0xFF6F72CA),
+        endColor: const Color(0xFF1E1466),
+      ),
+    );
+
+    // ❌ Removed: Compliance Alerts button
+  }
+
+  Future<bool> getData() async {
+    await Future<dynamic>.delayed(const Duration(milliseconds: 50));
+    return true;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppTheme.background,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: <Widget>[
+            getMainListViewUI(),
+            getAppBarUI("EmailSecuraX", onPlusTap: onPlusTap),
+            SizedBox(height: MediaQuery.of(context).padding.bottom)
+          ],
+        ),
+      ),
+    );
+  }
+
+  void onPlusTap() {
+    print("Plus tapped!");
+    // ✅ You can add functionality here (e.g., add new email, settings, etc.)
+    // Example: Show a dialog or navigate to settings
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Quick Actions'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.refresh),
+              title: const Text('Refresh Emails'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Implement email refresh
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Navigate to settings
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget getMainListViewUI() {
+    return FutureBuilder<bool>(
+      future: getData(),
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox();
+        } else {
+          return ListView.builder(
+            controller: scrollController,
+            padding: EdgeInsets.only(
+              top: AppBar().preferredSize.height + 
+                   MediaQuery.of(context).padding.top + 24,
+              bottom: 62 + MediaQuery.of(context).padding.bottom,
+            ),
+            itemCount: listViews.length,
+            scrollDirection: Axis.vertical,
+            itemBuilder: (BuildContext context, int index) {
+              widget.animationController?.forward();
+              return listViews[index];
+            },
+          );
+        }
+      },
+    );
+  }
+
+  Widget getAppBarUI(String title, {required VoidCallback onPlusTap}) {
+    return Column(
+      children: <Widget>[
+        AnimatedBuilder(
+          animation: widget.animationController!,
+          builder: (BuildContext context, Widget? child) {
+            return FadeTransition(
+              opacity: topBarAnimation!,
+              child: Transform(
+                transform: Matrix4.translationValues(
+                  0.0, 
+                  30 * (1.0 - topBarAnimation!.value), 
+                  0.0,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.HEADER_COlOR,
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: AppTheme.grey.withOpacity(0.4 * topBarOpacity),
+                        offset: const Offset(1.1, 1.1),
+                        blurRadius: 10.0,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      SizedBox(height: MediaQuery.of(context).padding.top),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          left: 16,
+                          right: 16,
+                          top: 16 - 8.0 * topBarOpacity,
+                          bottom: 12 - 8.0 * topBarOpacity,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            // Left spacer
+                            const SizedBox(width: 48),
+
+                            // Center title
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => NavigationHomeScreen(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                title,
+                                style: TextStyle(
+                                  fontFamily: AppTheme.fontName,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 22 + 6 - 6 * topBarOpacity,
+                                  letterSpacing: 1.2,
+                                  color: AppTheme.white,
+                                ),
+                              ),
+                            ),
+
+                            // Right + icon
+                            SizedBox(
+                              height: 48,
+                              width: 48,
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(32.0),
+                                ),
+                                onTap: onPlusTap,
+                                child: const Center(
+                                  child: Icon(Icons.add, color: AppTheme.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        )
+      ],
+    );
+  }
+}
