@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:email_securax/screens/gmail_integration_screen.dart';      // ✅ Your existing screen
-import 'package:email_securax/screens/outlook/outlook_integration_screen.dart'; // ✅ Your existing screen
+import 'package:email_securax/screens/gmail_integration_screen.dart';
+import 'package:email_securax/screens/outlook/outlook_integration_screen.dart';
 import 'package:email_securax/screens/file_url_scan/file_url_scan_screen.dart';
 import 'package:email_securax/screens/hibp/hibp_screen.dart';
 import 'package:email_securax/screens/training/security_training_screen.dart';
@@ -51,32 +51,27 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
     super.dispose();
   }
 
-  /// ✅ UPDATED: Get tab body - uses existing screens
+  /// ✅ FIXED: Get tab body - removed old tab references
   Widget getTabBody() {
     switch (currentIndex) {
       case TabData.TAB_INDEX_EMAIL_SECURITY:
-        // ✅ Show provider selection (Gmail or Outlook)
         return _buildEmailSecurityView();
         
       case TabData.TAB_INDEX_FILE_URL_SCAN:
-        // ✅ Your new File & URL scan screen
         return const FileUrlScanScreen();
         
       case TabData.TAB_INDEX_IDENTITY_MONITORING:
-        // ✅ Your existing HIBP screen
         return const HibpScreen();
         
       case TabData.TAB_INDEX_SECURITY_TRAINING:
-        // ✅ Your existing Security Training screen
         return const SecurityTrainingScreen();
         
       default:
-        // Main dashboard view
         return MainScreen(animationController: animationController);
     }
   }
 
-  /// ✅ NEW: Email Security View - Choose Gmail or Outlook
+  /// Email Security View - Choose Gmail or Outlook
   Widget _buildEmailSecurityView() {
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -111,7 +106,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
               ),
               const SizedBox(height: 48),
               
-              // ✅ Gmail Button - Goes to YOUR existing screen
+              // Gmail Button
               _buildProviderCard(
                 title: 'Gmail',
                 subtitle: 'Scan your Gmail inbox for threats',
@@ -121,7 +116,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const GmailIntegrationScreen(), // ✅ YOUR EXISTING SCREEN
+                      builder: (context) => const GmailIntegrationScreen(),
                     ),
                   );
                 },
@@ -129,7 +124,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
               
               const SizedBox(height: 16),
               
-              // ✅ Outlook Button - Goes to YOUR existing screen
+              // Outlook Button
               _buildProviderCard(
                 title: 'Outlook',
                 subtitle: 'Scan your Outlook/Office 365 inbox',
@@ -139,7 +134,7 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const OutlookIntegrationScreen(), // ✅ YOUR EXISTING SCREEN
+                      builder: (context) => const OutlookIntegrationScreen(),
                     ),
                   );
                 },
@@ -151,7 +146,6 @@ class _AppHomeScreenState extends State<AppHomeScreen> with TickerProviderStateM
     );
   }
 
-  /// ✅ Provider selection card
   Widget _buildProviderCard({
     required String title,
     required String subtitle,
