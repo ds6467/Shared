@@ -1,4 +1,3 @@
-
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -88,7 +87,7 @@ class _BottomBarViewState extends State<BottomBarView> with TickerProviderStateM
                               ),
                             ),
                             
-                            // ✅ Center spacer for floating action button
+                            // ✅ Center spacer for FAB
                             const SizedBox(width: 74.0, height: 62),
                             
                             // ✅ Tab 3: Identity Monitoring
@@ -124,7 +123,7 @@ class _BottomBarViewState extends State<BottomBarView> with TickerProviderStateM
           },
         ),
         
-        // ✅ Floating Action Button (Center +)
+        // ✅ Floating Action Button
         Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
           child: SizedBox(
@@ -151,10 +150,7 @@ class _BottomBarViewState extends State<BottomBarView> with TickerProviderStateM
                       decoration: BoxDecoration(
                         color: AppTheme.nearlyDarkBlue,
                         gradient: LinearGradient(
-                          colors: [
-                            AppTheme.nearlyDarkBlue,
-                            AppTheme.nearlyBlue,
-                          ],
+                          colors: [AppTheme.nearlyDarkBlue, AppTheme.nearlyBlue],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -205,13 +201,8 @@ class _BottomBarViewState extends State<BottomBarView> with TickerProviderStateM
   }
 }
 
-/// ✅ Individual Tab Icon Widget
 class TabIcons extends StatefulWidget {
-  const TabIcons({
-    Key? key,
-    this.tabIconData,
-    this.removeAllSelect,
-  }) : super(key: key);
+  const TabIcons({Key? key, this.tabIconData, this.removeAllSelect}) : super(key: key);
 
   final TabData? tabIconData;
   final Function()? removeAllSelect;
@@ -259,7 +250,6 @@ class _TabIconsState extends State<TabIcons> with TickerProviderStateMixin {
             child: Stack(
               alignment: AlignmentDirectional.center,
               children: <Widget>[
-                // ✅ Main tab content (icon + text)
                 ScaleTransition(
                   alignment: Alignment.center,
                   scale: Utils.buildAnimation(
@@ -272,7 +262,6 @@ class _TabIconsState extends State<TabIcons> with TickerProviderStateMixin {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Tab Icon
                       Image.asset(
                         widget.tabIconData!.isSelected
                             ? widget.tabIconData!.selectedImagePath
@@ -281,8 +270,6 @@ class _TabIconsState extends State<TabIcons> with TickerProviderStateMixin {
                         height: 28,
                       ),
                       const SizedBox(height: 4),
-                      
-                      // Tab Label
                       AutoSizeText(
                         widget.tabIconData!.title,
                         maxLines: 1,
@@ -302,8 +289,6 @@ class _TabIconsState extends State<TabIcons> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
-                
-                // ✅ Animated selection indicators (bubbles)
                 Positioned(
                   top: 4,
                   left: 6,
@@ -376,7 +361,6 @@ class _TabIconsState extends State<TabIcons> with TickerProviderStateMixin {
   }
 }
 
-/// ✅ Custom clipper for curved bottom bar
 class TabClipper extends CustomClipper<Path> {
   TabClipper({this.radius = 38.0});
 
@@ -385,56 +369,20 @@ class TabClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final Path path = Path();
-
     final double v = radius * 2;
+    
     path.lineTo(0, 0);
-    path.arcTo(
-      Rect.fromLTWH(0, 0, radius, radius),
-      degreeToRadians(180),
-      degreeToRadians(90),
-      false,
-    );
-    path.arcTo(
-      Rect.fromLTWH(
-        ((size.width / 2) - v / 2) - radius + v * 0.04,
-        0,
-        radius,
-        radius,
-      ),
-      degreeToRadians(270),
-      degreeToRadians(70),
-      false,
-    );
-
-    path.arcTo(
-      Rect.fromLTWH((size.width / 2) - v / 2, -v / 2, v, v),
-      degreeToRadians(160),
-      degreeToRadians(-140),
-      false,
-    );
-
-    path.arcTo(
-      Rect.fromLTWH(
-        (size.width - ((size.width / 2) - v / 2)) - v * 0.04,
-        0,
-        radius,
-        radius,
-      ),
-      degreeToRadians(200),
-      degreeToRadians(70),
-      false,
-    );
-    path.arcTo(
-      Rect.fromLTWH(size.width - radius, 0, radius, radius),
-      degreeToRadians(270),
-      degreeToRadians(90),
-      false,
-    );
+    path.arcTo(Rect.fromLTWH(0, 0, radius, radius), degreeToRadians(180), degreeToRadians(90), false);
+    path.arcTo(Rect.fromLTWH(((size.width / 2) - v / 2) - radius + v * 0.04, 0, radius, radius), degreeToRadians(270), degreeToRadians(70), false);
+    path.arcTo(Rect.fromLTWH((size.width / 2) - v / 2, -v / 2, v, v), degreeToRadians(160), degreeToRadians(-140), false);
+    path.arcTo(Rect.fromLTWH((size.width - ((size.width / 2) - v / 2)) - v * 0.04, 0, radius, radius), degreeToRadians(200), degreeToRadians(70), false);
+    path.arcTo(Rect.fromLTWH(size.width - radius, 0, radius, radius), degreeToRadians(270), degreeToRadians(90), false);
+    
     path.lineTo(size.width, 0);
     path.lineTo(size.width, size.height);
     path.lineTo(0, size.height);
-
     path.close();
+    
     return path;
   }
 
@@ -442,7 +390,6 @@ class TabClipper extends CustomClipper<Path> {
   bool shouldReclip(TabClipper oldClipper) => true;
 
   double degreeToRadians(double degree) {
-    final double radian = (math.pi / 180) * degree;
-    return radian;
+    return (math.pi / 180) * degree;
   }
 }
