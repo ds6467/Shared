@@ -1,0 +1,357 @@
+import 'package:email_securax/screens/splash_view.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_indicator/carousel_indicator.dart';
+
+import 'package:email_securax/AppTheme.dart';
+import 'package:email_securax/widgets/CenterNextButton.dart';
+
+import 'NavigationHomeScreen.dart';
+
+class IntroScreen extends StatefulWidget {
+  const IntroScreen({Key? key}) : super(key: key);
+
+  @override
+  _IntroScreenState createState() => _IntroScreenState();
+}
+
+class _IntroScreenState extends State<IntroScreen> with TickerProviderStateMixin {
+  AnimationController? _animationController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    );
+    _animationController?.animateTo(0.0);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _animationController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // ✅ Updated carousel slides with security-focused content
+    final List<Widget> introSlides = [
+      // Slide 1: Multi-Service Protection
+      _buildIntroSlide(
+        icon: Icons.security,
+        iconColor: AppTheme.nearlyDarkBlue,
+        title: "Advanced Email Protection",
+        subtitle: "6 Security Services Working Together",
+        description: "VirusTotal • Spamhaus • MXToolbox\nGoogle Web Risk • AbuseIPDB • Cisco Talos",
+        features: [
+          "Real-time threat detection",
+          "Multi-source validation",
+          "Comprehensive analysis",
+        ],
+      ),
+      
+      // Slide 2: Email Security
+      _buildIntroSlide(
+        icon: Icons.email_outlined,
+        iconColor: Colors.red,
+        title: "Email Security Scanner",
+        subtitle: "Scan Gmail & Outlook Accounts",
+        description: "Automatically detect phishing, malware, and suspicious content in your emails.",
+        features: [
+          "Domain reputation checking",
+          "IP address verification",
+          "URL & attachment scanning",
+        ],
+      ),
+      
+      // Slide 3: Identity Monitoring
+      _buildIntroSlide(
+        icon: Icons.person_search,
+        iconColor: Colors.orange,
+        title: "Identity Monitoring",
+        subtitle: "Stay Protected from Data Breaches",
+        description: "Check if your credentials have been compromised in known data breaches.",
+        features: [
+          "Have I Been Pwned integration",
+          "Password breach alerts",
+          "Email exposure monitoring",
+        ],
+      ),
+      
+      // Slide 4: Security Training
+      _buildIntroSlide(
+        icon: Icons.school,
+        iconColor: Colors.green,
+        title: "Security Training",
+        subtitle: "Learn to Spot Threats",
+        description: "Interactive training modules to help you recognize and avoid email scams.",
+        features: [
+          "Phishing awareness",
+          "Social engineering tactics",
+          "Best security practices",
+        ],
+      ),
+    ];
+
+    return Scaffold(
+      backgroundColor: AppTheme.SPLASH_BACKGROUND_COLOR,
+      body: ClipRect(
+        child: Stack(
+          children: [
+            // Background SVG
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: SvgPicture.asset(
+                'assets/images/intro_bg.svg',
+                width: MediaQuery.of(context).size.width,
+                fit: BoxFit.fitHeight,
+              ),
+            ),
+
+            // Splash overlay
+            SplashView(animationController: _animationController!),
+
+            // Carousel content
+            SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: const Offset(0, 0),
+              ).animate(
+                CurvedAnimation(
+                  parent: _animationController!,
+                  curve: const Interval(0.0, 0.2, curve: Curves.fastOutSlowIn),
+                ),
+              ),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0),
+                  end: const Offset(-1, 0),
+                ).animate(
+                  CurvedAnimation(
+                    parent: _animationController!,
+                    curve: const Interval(0.2, 0.4, curve: Curves.fastOutSlowIn),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 100),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CarouselSlider(
+                        options: CarouselOptions(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          enlargeCenterPage: true,
+                          enableInfiniteScroll: false,
+                          viewportFraction: 1.0,
+                          autoPlay: false,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          },
+                        ),
+                        items: introSlides.map((slide) {
+                          return Builder(
+                            builder: (BuildContext context) {
+                              return slide;
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                      CarouselIndicator(
+                        count: introSlides.length,
+                        index: _currentIndex,
+                        color: Colors.grey.withOpacity(0.3),
+                        activeColor: AppTheme.nearlyDarkBlue,
+                        height: 10,
+                        width: 10,
+                        space: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom "Get Started" button
+            CenterNextButton(
+              animationController: _animationController!,
+              onGetStarted: onClickGetStarted,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ✅ Build individual intro slide
+  Widget _buildIntroSlide({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required String description,
+    required List<String> features,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Icon
+        SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, -2),
+            end: const Offset(0, 0),
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: const Interval(0.0, 0.2, curve: Curves.fastOutSlowIn),
+            ),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 80,
+              color: iconColor,
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+
+        // Title
+        SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, -2),
+            end: const Offset(0, 0),
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: const Interval(0.0, 0.2, curve: Curves.fastOutSlowIn),
+            ),
+          ),
+          child: Text(
+            title,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.darkText,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Subtitle
+        SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0),
+            end: const Offset(-2, 0),
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: const Interval(0.2, 0.4, curve: Curves.fastOutSlowIn),
+            ),
+          ),
+          child: Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: iconColor,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Description
+        SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0),
+            end: const Offset(-2, 0),
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: const Interval(0.2, 0.4, curve: Curves.fastOutSlowIn),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 48),
+            child: Text(
+              description,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppTheme.grey,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Feature list
+        SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0),
+            end: const Offset(-2, 0),
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController!,
+              curve: const Interval(0.2, 0.4, curve: Curves.fastOutSlowIn),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 48),
+            child: Column(
+              children: features.map((feature) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: iconColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          feature,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: AppTheme.darkText,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void onClickGetStarted() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NavigationHomeScreen(),
+      ),
+    );
+  }
+}
