@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+
+class TabData {
+  TabData({
+    this.imagePath = '',
+    this.index = 0,
+    this.selectedImagePath = '',
+    this.title = '',
+    this.isSelected = false,
+    this.animationController,
+  });
+
+  String imagePath;
+  String selectedImagePath;
+  String title;
+  bool isSelected;
+  int index;
+
+  AnimationController? animationController;
+
+  // ✅ Updated tab indices (4 tabs now)
+  static int TAB_INDEX_MAIN = -1;  // Main dashboard (not in bottom bar)
+  static int TAB_INDEX_EMAIL_SECURITY = 0;
+  static int TAB_INDEX_FILE_URL_SCAN = 1;           // ✅ NEW: File & URL Scan
+  static int TAB_INDEX_IDENTITY_MONITORING = 2;     // Changed from index 1 to 2
+  static int TAB_INDEX_SECURITY_TRAINING = 3;       // Changed from index 2 to 3
+
+  // ✅ Updated tab list with 4 tabs
+  static List<TabData> tabIconsList = <TabData>[
+    TabData(
+      imagePath: 'assets/images/tab_1.png',
+      selectedImagePath: 'assets/images/tab_1s.png',
+      index: TAB_INDEX_EMAIL_SECURITY,
+      title: 'Email Security',
+      isSelected: true,
+      animationController: null,
+    ),
+    TabData(
+      imagePath: 'assets/images/tab_2.png',
+      selectedImagePath: 'assets/images/tab_2s.png',
+      index: TAB_INDEX_FILE_URL_SCAN,
+      title: 'File & URL Scan',  // ✅ NEW TAB
+      isSelected: false,
+      animationController: null,
+    ),
+    TabData(
+      imagePath: 'assets/images/tab_3.png',
+      selectedImagePath: 'assets/images/tab_3s.png',
+      index: TAB_INDEX_IDENTITY_MONITORING,
+      title: 'Identity Monitoring',
+      isSelected: false,
+      animationController: null,
+    ),
+    TabData(
+      imagePath: 'assets/images/tab_4.png',
+      selectedImagePath: 'assets/images/tab_4s.png',
+      index: TAB_INDEX_SECURITY_TRAINING,
+      title: 'Security Training',
+      isSelected: false,
+      animationController: null,
+    ),
+  ];
+}
